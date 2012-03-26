@@ -20,6 +20,8 @@ except ImportError:  # pragma: no cover
     # For Python 3.
     from urllib.request import urlopen
 
+import types
+
 from rottentomatoes_api_key import API_KEY
 
 
@@ -47,6 +49,7 @@ class RT(object):
         self.BASE_URL = BASE_URL
         self.lists_url = BASE_URL + 'lists'
         self.movie_url = BASE_URL + 'movies'
+        self.movie_alias_url = BASE_URL + 'movie_alias'
 
     def search(self, query, datatype='movies', **kwargs):
         """
@@ -105,6 +108,28 @@ class RT(object):
             movie_url.append('/%s' % specific_info)
         end_of_url = ['.json?', urlencode({'apikey': self.api_key})]
         movie_url.extend(end_of_url)
+        data = json.loads(urlopen(''.join(movie_url)).read())
+        return data
+
+    def infoimdb(self, id_num):
+        """
+        Return info for a movie given its `imdbid`.
+
+        >>> fight_club = u'tt0137523'
+        >>> RT().infoimdb(fight_club)
+        """
+        if isinstance(id_num, types.StringTypes):
+            id_num = id_num[2:]
+        else:
+            id_num = str(id_num)
+        movie_url = [self.movie_alias_url]
+        end_of_url = ['.json?', urlencode({
+            'id': id_num,
+            'type': 'imdb',
+            'apikey': self.api_key
+        })]
+        movie_url.extend(end_of_url)
+        print ''.join(movie_url)
         data = json.loads(urlopen(''.join(movie_url)).read())
         return data
 
